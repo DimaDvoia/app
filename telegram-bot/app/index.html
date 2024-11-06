@@ -5,8 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="index.css">
+    <script src="index.js"></script>
 </head>
 <body>
-    <!-- Остальной HTML код остается без изменений -->
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <img id="logo" src="logo.png" alt="Logo">
+        <div class="loading-text">Загрузка</div>
+        <div class="animation-container">
+            <div class="sheep"></div>
+            <div id="khinkali-container"></div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div id="content-container">
+        <!-- Главная -->
+        <div id="home-screen" class="screen active">
+            <img id="main-logo" src="logo.png" alt="Logo">
+        </div>
+
+        <!-- Меню -->
+        <div id="menu-screen" class="screen">
+            <!-- Категории меню -->
+            <div id="menu-categories">
+                <button class="menu-category" onclick="showDishes('salads')">Салаты</button>
+                <button class="menu-category" onclick="showDishes('cold')">Холодные закуски</button>
+                <button class="menu-category" onclick="showDishes('hot')">Горячее</button>
+                <button class="menu-category" onclick="showDishes('soups')">Супы</button>
+            </div>
+
+            <!-- Список блюд для каждой категории -->
+            <div id="salads" class="dishes-list">
+                <button class="back-button" onclick="showCategories()">← Назад</button>
+                <div class="dish-card">
+                    <img src="salad1.jpg" class="dish-image" alt="Салат">
+                    <div class="dish-info">
+                        <div class="dish-name">Греческий салат</div>
+                        <div class="dish-details">
+                            <span>895₽</span>
+                            <span>300г</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cold" class="dishes-list">
+                <button class="back-button" onclick="showCategories()">← Назад</button>
+            </div>
+
+            <div id="hot" class="dishes-list">
+                <button class="back-button" onclick="showCategories()">← Назад</button>
+            </div>
+
+            <div id="soups" class="dishes-list">
+                <button class="back-button" onclick="showCategories()">← Назад</button>
+            </div>
+        </div>
+
+        <!-- Информация -->
+        <div id="info-screen" class="screen">
+        </div>
+
+        <!-- Нижняя навигация -->
+        <div class="bottom-nav">
+            <a href="#" class="nav-item active" onclick="switchScreen('home')">
+                <div class="nav-icon">🏠</div>
+                <span>Главная</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchScreen('menu')">
+                <div class="nav-icon">🍽️</div>
+                <span>Меню</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchScreen('info')">
+                <div class="nav-icon">ℹ️</div>
+                <span>Информация</span>
+            </a>
+        </div>
+    </div>
 </body>
 </html> 
