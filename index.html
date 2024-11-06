@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Telegram Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            color: #ffffff;
+        }
+
+        /* Добавляем размытый фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background.jpg'); /* Замените на ваше фото */
+            background-size: cover;
+            background-position: center;
+            filter: blur(10px) brightness(0.5);
+            z-index: -1;
+        }
+
+        /* Стили для кнопок */
+        .button {
+            width: 280px;
+            height: 50px;
+            margin: 10px;
+            border: none;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #000000;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+            background: #f8f8f8;
+        }
+
+        #buttons-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            margin-top: 40px;
+        }
+
+        /* Стили для логотипа на главном экране */
+        #main-logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        /* Экран загрузки */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* Логотип */
+        #logo {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 40px;
+        }
+
+        /* Обновленный контейнер для анимации */
+        .animation-container {
+            width: 300px;
+            height: 90px;
+            position: relative;
+            margin-top: 20px;
+            overflow: visible;
+        }
+
+        /* Обновленный стиль для хинкали */
+        .khinkali {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-image: url('khinkali.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 1;
+            pointer-events: none;
+            top: 60%;
+        }
+
+        /* Обновленный барашек */
+        .sheep {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 90px;
+            height: 90px;
+            background-image: url('sheep.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            animation: moveRight 3s linear infinite;
+            z-index: 2;
+            transform: scaleX(-1) translateY(-50%);
+        }
+
+        /* Удаляем анимацию шагов */
+        @keyframes moveRight {
+            0% {
+                left: 0;
+            }
+            100% {
+                left: calc(100% - 90px);
+            }
+        }
+
+        /* Обновленные анимации */
+        @keyframes moveRight {
+            0% {
+                left: 0;
+            }
+            100% {
+                left: calc(100% - 90px);
+            }
+        }
+
+        /* Базовая анимация падения */
+        @keyframes fall {
+            0% {
+                transform: translate(var(--start-x), -10px) rotate(0deg);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--end-x), 0px) rotate(var(--rotation));
+                opacity: 1;
+            }
+        }
+
+        .falling-khinkali {
+            animation: fall 1s forwards;
+        }
+
+        /* Добавляем стиль для текста загрузки */
+        .loading-text {
+            font-size: 24px;
+            font-weight: 500;
+            color: #9E9E9E;
+            margin-top: 10px;
+            margin-bottom: 40px;
+        }
+
+        /* Убираем стили кнопок и добавляем стили для навигации */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(45, 45, 45, 0.95); /* Темно-серый с прозрачностью */
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px); /* Дополнительное размытие */
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            color: #888888; /* Серый цвет для неактивных элементов */
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active {
+            color: #ffffff; /* Белый цвет для активного элемента */
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* Обновленный контейнер для контента */
+        #content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            margin-top: 40px;
+            margin-bottom: 70px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Добавляем полупрозрачный фон для контента */
+        .screen {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px;
+        }
+
+        /* Стили для разных экранов */
+        .screen {
+            display: none;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #main-logo {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 30px;
+        }
+
+        /* Убираем черный фон у логотипа */
+        #home-screen {
+            background: none;
+            backdrop-filter: none;
+        }
+
+        /* Стили для категорий меню */
+        .menu-category {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-category:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Стили для списка блюд */
+        .dishes-list {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .dishes-list.active {
+            display: flex;
+        }
+
+        /* Стиль для карточки блюда */
+        .dish-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .dish-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .dish-info {
+            padding: 15px;
+        }
+
+        .dish-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .dish-details {
+            display: flex;
+            justify-content: space-between;
+            color: #e0e0e0;
+        }
+
+        /* Кнопка возврата к категориям */
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <img id="logo" src="logo.png" alt="Logo">
+        <div class="loading-text">Загрузка</div>
+        <div class="animation-container">
+            <div class="sheep"></div>
+            <div id="khinkali-container"></div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div id="content-container">
+        <!-- Главная -->
+        <div id="home-screen" class="screen active">
+            <img id="main-logo" src="logo.png" alt="Logo">
+            <!-- Здесь может быть контент главной страницы -->
+        </div>
+
+        <!-- Меню -->
+        <div id="menu-screen" class="screen">
+            <!-- Категории меню -->
+            <div id="menu-categories">
+                <button class="menu-category" onclick="showDishes('salads')">Салаты</button>
+                <button class="menu-category" onclick="showDishes('cold')">Холодные закуски</button>
+                <button class="menu-category" onclick="showDishes('hot')">Горячее</button>
+                <button class="menu-category" onclick="showDishes('soups')">Супы</button>
+            </div>
+
+            <!-- Список блюд для каждой категории -->
+            <div id="salads" class="dishes-list">
+                <button class="back-button" onclick="showCategories()">← Назад</button>
+                <div class="dish-card">
+                    <img src="salad1.jpg" class="dish-image" alt="Салат">
+                    <div class="dish-info">
+                        <div class="dish-name">Греческий салат</div>
+                        <div class="dish-details">
+                            <span>895₽</span>
+                            <span>300г</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Добавьте больше блюд по аналогии -->
+            </div>
+
+            <div id="cold" class="dishes-list">
+                <button class="back-button" onclick="showCategories()">← Назад</button>
+                <!-- Холодные закуски -->
+            </div>
+
+            <div id="hot" class="dishes-list">
+                <button class="back-button" onclick="showCategories()">← Назад</button>
+                <!-- Горячие блюда -->
+            </div>
+
+            <div id="soups" class="dishes-list">
+                <button class="back-button" onclick="showCategories()">← Назад</button>
+                <!-- Супы -->
+            </div>
+        </div>
+
+        <!-- Информация -->
+        <div id="info-screen" class="screen">
+            <!-- Здесь будет информация -->
+        </div>
+
+        <!-- Нижняя навигация -->
+        <div class="bottom-nav">
+            <a href="#" class="nav-item active" onclick="switchScreen('home')">
+                <div class="nav-icon">🏠</div>
+                <span>Главная</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchScreen('menu')">
+                <div class="nav-icon">🍽️</div>
+                <span>Меню</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchScreen('info')">
+                <div class="nav-icon">ℹ️</div>
+                <span>Информация</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function createKhinkali() {
+            const container = document.querySelector('.animation-container');
+            const sheep = document.querySelector('.sheep');
+            const sheepBox = sheep.getBoundingClientRect();
+            const containerBox = container.getBoundingClientRect();
+            
+            // Создаем только один хинкали за раз
+            const khinkali = document.createElement('div');
+            khinkali.className = 'khinkali falling-khinkali';
+            
+            // Уменьшаем разброс
+            const startX = random(-5, 5);
+            const endX = random(-10, 10);
+            
+            // Случайный поворот
+            const rotation = random(-180, 180) + 'deg';
+            
+            // Позиционируем относительно барашка
+            const leftPosition = sheepBox.left - containerBox.left + sheepBox.width/2;
+            khinkali.style.left = leftPosition + 'px';
+            
+            // Устанавливаем CSS переменные для анимации
+            khinkali.style.setProperty('--start-x', startX + 'px');
+            khinkali.style.setProperty('--end-x', endX + 'px');
+            khinkali.style.setProperty('--rotation', rotation);
+            
+            container.appendChild(khinkali);
+            
+            // Удаляем старые хинкали
+            setTimeout(() => {
+                if (container.children.length > 30) {
+                    container.removeChild(container.querySelector('.khinkali'));
+                }
+            }, 2000);
+        }
+
+        function switchScreen(screenId) {
+            // Убираем активный класс у всех экранов и пунктов меню
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Активируем нужный экран и пункт меню
+            document.getElementById(screenId + '-screen').classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        window.onload = function() {
+            tg.ready();
+            tg.expand();
+            
+            // Создаем хинкали каждые 500мс
+            const khinkaliInterval = setInterval(createKhinkali, 500);
+            
+            // Показываем контент после загрузки
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.opacity = '0';
+                document.getElementById('content-container').style.opacity = '1';
+                
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    clearInterval(khinkaliInterval);
+                }, 500);
+            }, 3000);
+        }
+
+        function sendData(buttonId) {
+            tg.sendData(buttonId);
+            tg.close();
+        }
+
+        function showDishes(category) {
+            // Скрываем категории
+            document.getElementById('menu-categories').style.display = 'none';
+            // Показываем выбранную категорию блюд
+            document.querySelectorAll('.dishes-list').forEach(list => {
+                list.classList.remove('active');
+            });
+            document.getElementById(category).classList.add('active');
+        }
+
+        function showCategories() {
+            // Показываем категории
+            document.getElementById('menu-categories').style.display = 'block';
+            // Скрываем все списки блюд
+            document.querySelectorAll('.dishes-list').forEach(list => {
+                list.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html> 
