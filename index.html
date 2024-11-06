@@ -12,8 +12,8 @@
             align-items: center;
             padding: 20px;
             margin: 0;
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+            background: #ffffff;
+            color: #000000;
             min-height: 100vh;
         }
         
@@ -36,7 +36,6 @@
             opacity: 0.8;
         }
 
-        /* Контейнер для кнопок (изначально скрыт) */
         #buttons-container {
             display: flex;
             flex-direction: column;
@@ -53,7 +52,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--tg-theme-bg-color, #ffffff);
+            background: #ffffff;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -61,23 +60,53 @@
             z-index: 1000;
         }
 
-        /* Анимация для логотипа */
+        /* Логотип */
         #logo {
             width: 150px;
             height: 150px;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
+            margin-bottom: 40px;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        /* Прогресс-бар */
+        .progress-container {
+            width: 80%;
+            max-width: 300px;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
         }
 
-        .loading-text {
-            font-size: 18px;
-            color: var(--tg-theme-text-color, #000000);
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 10px;
+            transition: width 1.5s ease;
+        }
+
+        /* Анимация барашка */
+        .sheep {
+            position: absolute;
+            top: -15px;
+            left: 0;
+            width: 30px;
+            height: 30px;
+            background-image: url('sheep.png'); /* Добавьте изображение барашка */
+            background-size: contain;
+            background-repeat: no-repeat;
+            animation: moveRight 1.5s linear;
+            transform: translateX(-50%);
+        }
+
+        @keyframes moveRight {
+            from {
+                left: 0%;
+            }
+            to {
+                left: 100%;
+            }
         }
     </style>
 </head>
@@ -85,7 +114,10 @@
     <!-- Экран загрузки -->
     <div id="loading-screen">
         <img id="logo" src="logo.png" alt="Logo">
-        <div class="loading-text">Загрузка...</div>
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+            <div class="sheep"></div>
+        </div>
     </div>
 
     <!-- Контейнер с кнопками -->
@@ -102,16 +134,19 @@
             tg.ready();
             tg.expand();
             
+            // Анимация прогресс-бара
+            const progressBar = document.querySelector('.progress-bar');
+            progressBar.style.width = '100%';
+            
             // Показываем контент после загрузки
             setTimeout(() => {
                 document.getElementById('loading-screen').style.opacity = '0';
                 document.getElementById('buttons-container').style.opacity = '1';
                 
-                // Удаляем экран загрузки после анимации
                 setTimeout(() => {
                     document.getElementById('loading-screen').style.display = 'none';
                 }, 500);
-            }, 1500); // Время показа загрузки (1.5 секунды)
+            }, 1500);
         }
 
         function sendData(buttonId) {
